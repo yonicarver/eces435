@@ -47,6 +47,16 @@ imshow(sharp_image_50)
 title('Image with \alpha = 50')
 
 %%
+% load images
+moon = imread('moon.tiff');
+outoffocus = imread('outoffocus.tif');
+
+alpha = 10;
+
+% run the sharp_image function on both images
+sharp_moon = sharpen(moon, alpha);
+sharp_outoffocus = sharpen(outoffocus, alpha);
+
 function sharp_image = sharpen(image, alpha)
 	%{
 	sharpened image equation: f_s(x,y) = f(x,y) + ?g(x,y)
@@ -64,7 +74,6 @@ function sharp_image = sharpen(image, alpha)
 	% sum the high frequency component with the original image to obtain the
 	% sharpened image
 	sharp_image = uint8(double(image) + double(image_high_freq));
-		
 end
 
 
