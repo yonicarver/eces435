@@ -13,7 +13,7 @@ function out=Vector2ZigzagMtx(in)
 % Date : 10/08/00
 
 Dmtx=sqrt(length(in));
-out=zeros(Dmtx,Dmtx);
+out=zeros(round(Dmtx),round(Dmtx));
 TurnFlg=0;   % 0 for down trun, 1 for up trun
 index=2;
 out(1,1)=in(1);
