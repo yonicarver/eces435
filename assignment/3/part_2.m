@@ -13,6 +13,7 @@ clear; clc; close all
 barbara = imread('Barbara.bmp');
 peppers = imread('peppers.tif');
 baboon = imread('baboon.tif');
+
 %%
 
 barbara_8 = (double(bitget(barbara, 8)));	% MSB (most significant bit plane)
@@ -24,15 +25,39 @@ barbara_8 = (double(bitget(barbara, 8)));	% MSB (most significant bit plane)
 % barbara_2 = (double(bitget(barbara, 2)));
 % barbara_1 = (double(bitget(barbara, 1)));	% LSB (least significant bit plane)
 
-%% look-up table
 
-rng(25)		% seed the random number generator with the user specified key
-lut = rand(1,256) > 0.5;	% generate look-up table values
-% lut = lut(1:10);
-%%
+% function encoded_image = ym_watermark(image, binary_watermark, key)
 
-peppers = peppers(1:10);
-b8 = barbara_8(1:10);
+binary_watermark = barbara_8;
+key = 435;
+
+peppers_encoded_image = ym_watermark(peppers, binary_watermark, key);
+baboon_encoded_image = ym_watermark(baboon, binary_watermark, key);
+
+figure
+subplot(1,3,1)
+imshow(peppers)
+title('Original Image (peppers.tif)')
+subplot(1,3,2)
+imshow(peppers_encoded_image)
+title('Encoded Image')
+subplot(1,3,3)
+imshow(double(peppers_encoded_image - peppers))
+title('Encoded Image - Original Image')
+
+figure
+subplot(1,3,1)
+imshow(baboon)
+title('Original Image (baboon.tif)')
+subplot(1,3,2)
+imshow(baboon_encoded_image)
+title('Encoded Image')
+subplot(1,3,3)
+imshow(double(baboon_encoded_image - baboon))
+title('Encoded Image - Original Image')
+
+
+
 %%
 % for i = 1:length(lut)		% for each row:
 % 	for j = 1:length(i)		% each pixel value
@@ -43,12 +68,12 @@ b8 = barbara_8(1:10);
 % 		else if lut(pixel_value) == 1
 % 			% embed "1" (changed)
 
-barbara(1,:);	% row # 1 of barbara
+% barbara(1,:);	% row # 1 of barbara
 
 
 % 168 163 159 154
 %%
-clc
+
 [num_rows, num_cols] = size(barbara);
 
 % function index = lut_lookup(value_you_need, n)
@@ -76,13 +101,8 @@ for i = 1:num_rows		% for each row
 		elseif (barbara_8(i,j) == 1)
 			% changed, embed closest lut value
 % 			encoded_image(i,j) = lut_lookup(barbara_8(i,j),j);
-			encoded_image(i,j) = lut_lookup(barbara_8(i,j),double(baboon(i,j)));
+			encoded_image(i,j) = lut_lookup(key, barbara_8(i,j),double(baboon(i,j)));
 		end
-% 		encoded_image(i,j) = barbara_8(i,j);
-% 		disp(encoded_image(i,j))
-% 		disp(i)
-% 		disp(j)
-% 		disp(' ')
 
 % 		disp(lut(barbara(i)))
 % 		disp(['row number: ', num2str(i)])
@@ -92,19 +112,12 @@ end
 
 figure
 imshow(encoded_image)
+title('Encoded Image')
 % imshow(uint8(encoded_image))
 % imshow(double(encoded_image))
 figure
 imshow(double(encoded_image-baboon))
-%%
-i = 1;
-j = 5;
-encoded_image(1,1) = lut_lookup(barbara_8(i,j),j)
-%%
-lut_lookup(barbara_8(1,1),1)
-lut_lookup(barbara_8(1,2),2)
-lut_lookup(barbara_8(1,3),3)
-lut_lookup(barbara_8(1,4),4)
+title('Encoded Image - Original Image')
 
 %% find closest value of 0 or 1
 
@@ -148,31 +161,71 @@ end
 disp(['pos: ', num2str(positive_index), ' neg: ', num2str(negative_index), ' index: ', num2str(i)])
 
 
-
 %%
-%{
-function output_image = ym_watermark(image, binary_watermark, key)
-	% image = image to be watermarked
-	% binary_watermark
-	% key = key used to generate the lookup table
+
+function encoded_image = ym_watermark(image, binary_watermark, key)
+
+	% image = image to place the watermark into
+	% binary_watermark = most significant bit plane of watermark image that you
+	%					 wish to embed into <image>
+	% key = seed the random number generator with the user specified key
 	
 	rng(key)		% seed the random number generator with the user specified key
 	lut = rand(1,256) > 0.5;	% generate look-up table values
 	
-	
-	output_image = uint8(output_image);
+	[num_rows, num_cols] = size(image);
+
+	% function index = lut_lookup(value_you_need, n)
+	% value_you_need = 1;		% either a 1 or 0
+	% n = 5;					% index you're trying to find the closest 1/0 to
+
+	% encoded_image = zeros(size(barbara));
+	encoded_image = image;	% we are trying to embed barbara_8 into peppers
+	for i = 1:num_rows		% for each row
+	% for i = 1:5
+		for j = 1:num_cols	% for each pixel of each row
+	% 	for j = 1:50
+	% 		if lut(barbara(i,j)) == 0
+	% 			disp('got a 0')
+	% 		elseif lut(barbara(i,j)) == 1
+	% 			disp('got a 1')
+	% 		end
+	% 		lut_lookup(barbara_8(index,j),j);
+	% 		(barbara_8(index,j))
+	% 		disp(lut(barbara(i,j)))
+
+			if (binary_watermark(i,j) == 0)
+				% unchanged, embed same pixel value
+				encoded_image(i,j) = image(i,j);
+			elseif (binary_watermark(i,j) == 1)
+				% changed, embed closest lut value
+	% 			encoded_image(i,j) = lut_lookup(barbara_8(i,j),j);
+				encoded_image(i,j) = lut_lookup(key, binary_watermark(i,j),double(image(i,j)));
+			end
+
+	% 		disp(lut(barbara(i)))
+	% 		disp(['row number: ', num2str(i)])
+	% 		disp(barbara(i,j))
+		end
+	end
+
 
 end
 
-%}
 
 
-function index = lut_lookup(value_you_need, n)
 
-	% value_you_need = 1;		% either a 1 or 0
-	% n = 5;					% index you're trying to find the closest 1/0 to
+function index = lut_lookup(key, value_you_need, n)
+
+	% key = seed the random number generator with the user specified key
+	% value_you_need = either a 1 or 0, depending on what the current watermark
+	%				   pixel value is
+	% n = the index you're trying to find the closest value_you_need to
+
+	% this function returns the index of the closest 1 or 0 to the current index
+	% you're looking at
 	
-	rng(25)		% seed the random number generator with the user specified key
+	rng(key)		% seed the random number generator with the user specified key
 	lut = rand(1,256) > 0.5;	% generate look-up table values
 	idx_needed = find(lut == value_you_need);	% all the places where the lut is equal to the value you need
 
