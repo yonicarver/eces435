@@ -17,14 +17,6 @@ baboon = imread('baboon.tif');
 %%
 
 barbara_8 = (double(bitget(barbara, 8)));	% MSB (most significant bit plane)
-% barbara_7 = (double(bitget(barbara, 7)));
-% barbara_6 = (double(bitget(barbara, 6)));
-% barbara_5 = (double(bitget(barbara, 5)));
-% barbara_4 = (double(bitget(barbara, 4)));
-% barbara_3 = (double(bitget(barbara, 3)));
-% barbara_2 = (double(bitget(barbara, 2)));
-% barbara_1 = (double(bitget(barbara, 1)));	% LSB (least significant bit plane)
-
 
 % function encoded_image = ym_watermark(image, binary_watermark, key)
 
@@ -56,22 +48,9 @@ subplot(1,3,3)
 imshow(double(baboon_encoded_image - baboon))
 title('Encoded Image - Original Image')
 
+imwrite(peppers_encoded_image, 'peppers_encoded_image.tif')
+imwrite(baboon_encoded_image, 'baboon_encoded_image.tif')
 
-
-%%
-% for i = 1:length(lut)		% for each row:
-% 	for j = 1:length(i)		% each pixel value
-% 		if lut(pixel_value) == 0 &&
-% 			% embed "0" (unchanged)
-% 			encoded_image()
-% 
-% 		else if lut(pixel_value) == 1
-% 			% embed "1" (changed)
-
-% barbara(1,:);	% row # 1 of barbara
-
-
-% 168 163 159 154
 %%
 
 [num_rows, num_cols] = size(barbara);
@@ -82,10 +61,10 @@ title('Encoded Image - Original Image')
 
 % encoded_image = zeros(size(barbara));
 encoded_image = baboon;	% we are trying to embed barbara_8 into peppers
-for i = 1:num_rows		% for each row
-% for i = 1:5
-	for j = 1:num_cols	% for each pixel of each row
-% 	for j = 1:50
+% for i = 1:num_rows		% for each row
+for i = 1:5
+% 	for j = 1:num_cols	% for each pixel of each row
+	for j = 1:50
 % 		if lut(barbara(i,j)) == 0
 % 			disp('got a 0')
 % 		elseif lut(barbara(i,j)) == 1
@@ -161,7 +140,8 @@ end
 disp(['pos: ', num2str(positive_index), ' neg: ', num2str(negative_index), ' index: ', num2str(i)])
 
 
-%%
+
+%% FUNCTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function encoded_image = ym_watermark(image, binary_watermark, key)
 
@@ -202,17 +182,9 @@ function encoded_image = ym_watermark(image, binary_watermark, key)
 	% 			encoded_image(i,j) = lut_lookup(barbara_8(i,j),j);
 				encoded_image(i,j) = lut_lookup(key, binary_watermark(i,j),double(image(i,j)));
 			end
-
-	% 		disp(lut(barbara(i)))
-	% 		disp(['row number: ', num2str(i)])
-	% 		disp(barbara(i,j))
 		end
 	end
-
-
 end
-
-
 
 
 function index = lut_lookup(key, value_you_need, n)
